@@ -1,15 +1,19 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
 import './App.css'
-
+import Navbar from './components/Navbar'
+import ProductCard from './components/ProductCard'
 function App() {
-  const [count, setCount] = useState(0)
-
+const product = {
+  name: "Wireless Headphones",
+  price: 4500,
+  image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTW358BdQSXX14ArcM3IAVcgtYr_M6MRaQpvUYZunQCeg&s=10",
+  
+};
   return (
     <>
-     <h1>This is a Project</h1>
+  
+     <Navbar />
+      <ProductCard product={product} />
+      <ProductCard product={product} />
     </>
   )
 }
