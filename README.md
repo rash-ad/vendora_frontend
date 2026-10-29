@@ -61,63 +61,7 @@ Vendora is currently being developed as a working demo. Features such as secure 
 - Postman or another API testing tool
 - npm
 
-## 📁 Project Structure
 
-```text
-Vendora/
-├── vendora-frontend/
-│   ├── public/
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Navbar.jsx
-│   │   │   └── ProductCard.jsx
-│   │   ├── pages/
-│   │   │   ├── Home.jsx
-│   │   │   ├── Shop.jsx
-│   │   │   ├── Categories.jsx
-│   │   │   ├── SellerRegister.jsx
-│   │   │   ├── Login.jsx
-│   │   │   └── Register.jsx
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   ├── package.json
-│   └── README.md
-│
-├── vendora-backend/
-│   ├── src/
-│   │   ├── config/
-│   │   ├── controllers/
-│   │   ├── models/
-│   │   ├── routes/
-│   │   ├── middleware/
-│   │   └── index.js
-│   ├── .env
-│   ├── .gitignore
-│   └── package.json
-│
-└── README.md
-```
-
-*This is a suggested structure. Adjust folder and file names to match your actual project.*
-
-## ⚙️ Installation and Setup
-
-### Prerequisites
-
-Install the following before running Vendora:
-
-- Node.js and npm
-- MongoDB or a MongoDB Atlas database
-- Git (optional)
-
-### 1. Clone the Repository
-
-```bash
-git clone YOUR_GITHUB_REPOSITORY_URL
-cd Vendora
-```
-
-Replace `YOUR_GITHUB_REPOSITORY_URL` with your actual GitHub repository URL.
 
 ### 2. Set Up the Frontend
 
@@ -142,13 +86,8 @@ cd vendora-backend
 npm install
 ```
 
-Create a `.env` file in the backend directory:
 
-```env
-PORT=8000
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_long_random_secret
-```
+
 
 Replace the example values with your actual configuration. Never commit real secrets to GitHub.
 
@@ -160,34 +99,8 @@ npm run dev
 
 If your backend does not have a `dev` script yet, add one that runs your actual entry file.
 
-## 🔌 API Endpoints
 
-The following endpoints are a proposed API structure and should be updated to match the implemented backend.
 
-| Method | Endpoint | Purpose |
-|---|---|---|
-| POST | `/api/users/register` | Register a customer |
-| POST | `/api/users/login` | Log in a customer |
-| POST | `/api/sellers/register` | Submit seller registration |
-| POST | `/api/sellers/login` | Log in a seller |
-| GET | `/api/products` | Retrieve products |
-| GET | `/api/categories` | Retrieve categories |
-| POST | `/api/cart` | Add an item to the cart |
-| POST | `/api/orders` | Create an order |
-
-## 🗄️ Main Data Models
-
-The planned database models include:
-
-- **User:** Customer account details and authentication information.
-- **Seller:** Shop name, email, shop description, business address, district, and approval status.
-- **Product:** Product name, description, price, images, category, stock, and seller reference.
-- **Category:** Product category details.
-- **Cart:** Customer reference and selected products with quantities.
-- **Order:** Customer, ordered products, total amount, delivery information, and order status.
-- **Payment:** Payment method, amount, transaction reference, and payment status.
-
-These are planned entities; fields and relationships may change as development progresses.
 
 ## 🔐 Security Considerations
 
