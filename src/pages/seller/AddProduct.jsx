@@ -1,30 +1,84 @@
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
+import axios from "axios";
 import { FaTimes, FaImage } from "react-icons/fa";
-import axiosInstance from "../../api/axiosInstance";
+import { useNavigate } from "react-router-dom";
+import { FaArrowLeft } from "react-icons/fa";
+// ================= ADD YOUR VALUES HERE =================
+const BACKEND_URL = "YOUR_BACKEND_URL"; // e.g. http://localhost:5000
+const ADD_PRODUCT_ROUTE = "YOUR_ROUTE"; // e.g. /api/products
+// ========================================================
+
+const CATEGORIES = [
+  "Electronics",
+  "Fashion",
+  "Home & Living",
+  "Beauty",
+  "Sports",
+  "Books",
+  "Other",
+];
+
+const EMPTY_FORM = {
+  name: "",
+  description: "",
+  price: "",
+  stock: "",
+  category: "",
+};
 
 function AddProduct({ seller, onClose, onSuccess }) {
-  const [form, setForm] = useState({
-    name: "",
-    description: "",
-    price: "",
-    stock: "",
-    category: "",
-  });
+  const [form, setForm] = useState(EMPTY_FORM);
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [visible, setVisible] = useState(true);
+  const navigate = useNavigate();
+  // image preview urls (cleaned up automatically)
+  const previews = useMemo(
+    () => images.map((img) => URL.createObjectURL(img)),
+    [images]
+  );
+  useEffect(() => {
+    return () => previews.forEach((url) => URL.revokeObjectURL(url));
+  }, [previews]);
 
-  const handleChange = (e) =>
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  // clear everything
+  const resetAll = () => {
+    setForm(EMPTY_FORM);
+    setImages([]);
+    setError("");
+    setLoading(false);
+  };
+
+  // cross (X) button: clear everything and close
+  const handleClose = () => {
+    resetAll();
+    setVisible(false); // hides the modal by itself
+    if (typeof onClose === "function") onClose();
+    navigate("/seller/dashboard")
+  };
+
+  const handleBack = () => {
+    resetAll();
+    setVisible(false);
+    if (typeof onClose === "function") onClose();
+    navigate("/seller/dashboard");
+  };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleImages = (e) => {
-    const picked = Array.from(e.target.files);
+    const picked = Array.from(e.target.files).filter((f) =>
+      f.type.startsWith("image/")
+    );
     setImages((prev) => [...prev, ...picked].slice(0, 5));
     e.target.value = "";
   };
 
-  const removeImage = (i) =>
-    setImages((prev) => prev.filter((_, idx) => idx !== i));
+  const removeImage = (index) =>
+    setImages((prev) => prev.filter((_, i) => i !== index));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,20 +89,39 @@ function AddProduct({ seller, onClose, onSuccess }) {
       return;
     }
 
+    const sellerId = seller?._id || seller?.id;
+    if (!sellerId) {
+      setError("Seller not found. Please login again.");
+      return;
+    }
+
     const data = new FormData();
-    data.append("sellerId", seller._id || seller.id);
-    Object.entries(form).forEach(([k, v]) => data.append(k, v));
+    data.append("sellerId", sellerId);
+    Object.entries(form).forEach(([key, value]) =>
+      data.append(key, String(value).trim())
+    );
     images.forEach((img) => data.append("images", img));
 
     try {
       setLoading(true);
-      await axiosInstance.post("/products", data);
-      onSuccess && onSuccess();
-      onClose();
+      const token = localStorage.getItem("token");
+
+      await axios.post(`${BACKEND_URL}${ADD_PRODUCT_ROUTE}`, data, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+
+      resetAll();
+      setVisible(false);
+      if (typeof onSuccess === "function") onSuccess();
+      if (typeof onClose === "function") onClose();
     } catch (err) {
       console.error(err);
-      setError(err.response?.data?.message || "Failed to add product");
-    } finally {
+      setError(
+        err.response?.data?.message ||
+        (err.request
+          ? "Cannot reach the server. Check backend URL."
+          : "Failed to add product")
+      );
       setLoading(false);
     }
   };
@@ -56,13 +129,25 @@ function AddProduct({ seller, onClose, onSuccess }) {
   const inputStyle =
     "w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none focus:border-green-600";
 
+  if (!visible) return null;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl">
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">Add New Product</h2>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
+            >
+              <FaArrowLeft />
+            </button>
+            <h2 className="text-xl font-bold text-gray-900">Add New Product</h2>
+          </div>
           <button
-            onClick={onClose}
+            type="button"
+            onClick={handleClose}
             className="rounded-full p-2 text-gray-500 hover:bg-gray-100"
           >
             <FaTimes />
@@ -120,13 +205,11 @@ function AddProduct({ seller, onClose, onSuccess }) {
             required
           >
             <option value="">Select category</option>
-            <option value="Electronics">Electronics</option>
-            <option value="Fashion">Fashion</option>
-            <option value="Home & Living">Home & Living</option>
-            <option value="Beauty">Beauty</option>
-            <option value="Sports">Sports</option>
-            <option value="Books">Books</option>
-            <option value="Other">Other</option>
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
           </select>
 
           <div>
@@ -144,10 +227,10 @@ function AddProduct({ seller, onClose, onSuccess }) {
 
             {images.length > 0 && (
               <div className="mt-3 grid grid-cols-5 gap-2">
-                {images.map((img, i) => (
-                  <div key={i} className="relative">
+                {previews.map((src, i) => (
+                  <div key={src} className="relative">
                     <img
-                      src={URL.createObjectURL(img)}
+                      src={src}
                       alt="preview"
                       className="h-16 w-full rounded-lg object-cover"
                     />
